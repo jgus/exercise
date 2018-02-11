@@ -3,6 +3,8 @@
 
 #include "dispatcher/dispatcher.hpp"
 
+using namespace std::chrono_literals;
+
 TEST(Dispatcher, SingleSync)
 {
     auto queue = std::make_shared<dispatcher::task_queue>();
@@ -37,7 +39,7 @@ TEST(Dispatcher, InterruptSync)
 TEST(Dispatcher, SingleAsync)
 {
     auto queue = std::make_shared<dispatcher::task_queue>();
-    auto result = queue->enque([](){ std::this_thread::sleep_for(std::chrono::milliseconds(20)); return 42; });
+    auto result = queue->enque([](){ std::this_thread::sleep_for(20ms); return 42; });
     queue->finish();
     auto process_result = queue->process_on_new_thread();
     ASSERT_EQ(result.get(), 42);
@@ -47,9 +49,9 @@ TEST(Dispatcher, SingleAsync)
 TEST(Dispatcher, MultiAsync)
 {
     auto queue = std::make_shared<dispatcher::task_queue>();
-    auto result1 = queue->enque([](){ std::this_thread::sleep_for(std::chrono::milliseconds(20)); return 42; });
-    auto result2 = queue->enque([](){ std::this_thread::sleep_for(std::chrono::milliseconds(20)); return 1337; });
-    auto result3 = queue->enque([](){ std::this_thread::sleep_for(std::chrono::milliseconds(20)); return 1; });
+    auto result1 = queue->enque([](){ std::this_thread::sleep_for(20ms); return 42; });
+    auto result2 = queue->enque([](){ std::this_thread::sleep_for(20ms); return 1337; });
+    auto result3 = queue->enque([](){ std::this_thread::sleep_for(20ms); return 1; });
     queue->finish();
     auto process_result = queue->process_on_new_thread();
     ASSERT_EQ(result1.get(), 42);
@@ -61,9 +63,9 @@ TEST(Dispatcher, MultiAsync)
 TEST(Dispatcher, MultiPool)
 {
     auto queue = std::make_shared<dispatcher::task_queue>();
-    auto result1 = queue->enque([](){ std::this_thread::sleep_for(std::chrono::milliseconds(20)); return 42; });
-    auto result2 = queue->enque([](){ std::this_thread::sleep_for(std::chrono::milliseconds(20)); return 1337; });
-    auto result3 = queue->enque([](){ std::this_thread::sleep_for(std::chrono::milliseconds(20)); return 1; });
+    auto result1 = queue->enque([](){ std::this_thread::sleep_for(20ms); return 42; });
+    auto result2 = queue->enque([](){ std::this_thread::sleep_for(20ms); return 1337; });
+    auto result3 = queue->enque([](){ std::this_thread::sleep_for(20ms); return 1; });
     queue->finish();
     auto process_result1 = queue->process_on_new_thread();
     auto process_result2 = queue->process_on_new_thread();
@@ -82,7 +84,7 @@ TEST(Dispatcher, InterruptPool)
     std::vector<std::future<void>> results;
     for (int i = 0; i < 16; ++i)
     {
-        results.push_back(queue->enque([](){ std::this_thread::sleep_for(std::chrono::milliseconds(20)); }));
+        results.push_back(queue->enque([](){ std::this_thread::sleep_for(20ms); }));
     }
     std::vector<std::future<dispatcher::task_queue::process_result>> process_results;
     for (int i = 0; i < 4; ++i)
@@ -90,7 +92,7 @@ TEST(Dispatcher, InterruptPool)
         process_results.push_back(queue->process_on_new_thread());
     }
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(40));
+    std::this_thread::sleep_for(40ms);
 
     queue->interrupt();
 
@@ -103,7 +105,7 @@ TEST(Dispatcher, InterruptPool)
     int waiting_count = 0;
     for (auto& result : results)
     {
-        if (result.wait_for(std::chrono::seconds::zero()) == std::future_status::ready)
+        if (result.wait_for(0s) == std::future_status::ready)
         {
             ++ready_count;
         }

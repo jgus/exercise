@@ -4,6 +4,8 @@
 
 #include "boggle/boggle.hpp"
 
+using namespace std::chrono_literals;
+
 TEST(Boggle, SmallKnownBoard)
 {
     boggle::board<char> board;
@@ -85,6 +87,5 @@ TEST(Boggle, LargeRandomPerformance)
     boggle::solve(board, dictionary);
 
     auto end_time = std::chrono::high_resolution_clock::now();
-    auto duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - begin_time).count();
-    ASSERT_LE(duration_ms, 1000);
+    ASSERT_LE(end_time - begin_time, 1000ms);
 }
